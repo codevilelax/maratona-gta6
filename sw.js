@@ -3,7 +3,7 @@
 const CACHE = 'maratona-gta6-v1';
 
 self.addEventListener('install', e => {
-  const arquivos = ['./', './index.html', './manifest.json', './icone-180.png', './icone-192.png', './icone-512.png'];
+  const arquivos = ['./', './index.html', './manifest.json', './icone-180.png', './icone-192.png', './icone-512.png', './abertura-iphone14.png'];
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(arquivos)).then(() => self.skipWaiting()));
 });
 
