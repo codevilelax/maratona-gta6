@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Maratona GTA 6</title>
+  <meta name="theme-color" content="#1a0b2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Maratona">
+  <!-- ícone da tela inicial: iPhone usa o apple-touch-icon, Android usa o manifest -->
+  <link rel="icon" type="image/png" href="icone-192.png">
+  <link rel="apple-touch-icon" href="icone-180.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Barlow:wght@400;500;600;700&amp;display=swap">
+  <style>
+    /* Paleta Vice City anos 80: pôr do sol no topo, neon nos destaques */
+    :root {
+      --roxo: #1a0b2e;
+      --roxo-2: #12071f;
+      --magenta: #ff2e88;
+      --laranja: #ff8a3d;
+      --rosa: #ff2e88;
+      --ciano: #22d3ee;
+      --ambar: #ffb347;
+      --texto: #fdf2ff;
+      --texto-2: #cdb8e8;
+      --vidro: rgba(30, 12, 52, .55);
+      --borda: rgba(255, 255, 255, .14);
+      --amarelo: #ffd23f;
+      --vermelho: #ff4d5e;
+
+      /* uma cor por período do dia */
+      --madrugada: #9d7bff;
+      --manha: #ffb38a;
+      --tarde: #ffc93c;
+      --noite: #ff2e88;
+
+      --titulo: 'Bebas Neue', Impact, 'Arial Narrow Bold', 'Arial Narrow', sans-serif;
+      --corpo: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html {
+      background:
+        linear-gradient(180deg, #ff8a3d 0, #ff2e88 170px, #7a1f73 330px, var(--roxo) 560px, var(--roxo-2) 100%);
+      background-color: var(--roxo-2);
+      min-height: 100%;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--texto);
+      font: 500 1.0625rem/1.45 var(--corpo);
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    button { font: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid var(--ciano); outline-offset: 3px; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    .wrap {
+      width: min(560px, 100%);
+      margin-inline: auto;
+      padding-left: max(14px, env(safe-area-inset-left, 0px));
+      padding-right: max(14px, env(safe-area-inset-right, 0px));
+    }
+
+    /* ---------- Cabeçalho com sol e palmeiras ---------- */
+    .cena {
+      position: relative;
+      padding-top: env(safe-area-inset-top, 0px);
+      text-align: center;
+    }
+    .cena svg { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+    .cena h1 {
+      margin: -6px 0 0;
+      font: 400 clamp(2.9rem, 15vw, 4.2rem)/.9 var(--titulo);
+      letter-spacing: .04em;
+      color: #fff;
+      text-shadow: 0 0 6px var(--rosa), 0 0 18px var(--rosa), 0 0 36px rgba(255, 46, 136, .6);
+    }
+    .cena h1 span { color: var(--ciano); text-shadow: 0 0 6px var(--ciano), 0 0 20px var(--ciano); }
+    .cena .datas {
+      margin: 6px 0 18px;
+      color: var(--ambar);
+      font: 400 1.25rem var(--titulo);
+      letter-spacing: .22em;
+      text-shadow: 0 0 10px rgba(255, 179, 71, .7);
+    }
+
+    /* ---------- Topo fixo: hora, período, agora, próximo ---------- */
+    .status {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding-top: calc(8px + env(safe-area-inset-top, 0px));
+      padding-bottom: 10px;
+      background: rgba(18, 7, 31, .86);
+      border-bottom: 1px solid color-mix(in srgb, var(--cor-periodo) 60%, transparent);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+    .status-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .relogio {
+      font: 400 2.5rem/1 var(--titulo);
+      letter-spacing: .04em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 10px rgba(255, 255, 255, .35);
+    }
+    .relogio small { font-size: 1.1rem; color: var(--texto-2); margin-left: 2px; }
+    .data-hoje { display: block; color: var(--texto-2); font-size: .85rem; font-weight: 600; text-transform: capitalize; }
+    .periodo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1.5px solid var(--cor-periodo);
+      border-radius: 999px;
+      color: var(--cor-periodo);
+      font: 400 1.2rem/1 var(--titulo);
+      letter-spacing: .08em;
+      box-shadow: 0 0 12px color-mix(in srgb, var(--cor-periodo) 45%, transparent);
+    }
+    .agora {
+      margin-top: 8px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--cor-periodo);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--cor-periodo) 14%, transparent);
+      animation: pulsar 2.4s ease-in-out infinite;
+    }
+    .rotulo {
+      display: block;
+      color: var(--cor-periodo);
+      font: 400 .95rem/1 var(--titulo);
+      letter-spacing: .18em;
+    }
+    .agora strong { display: block; margin-top: 3px; font-size: 1.15rem; font-weight: 700; line-height: 1.25; }
+    .proximo { margin: 8px 2px 0; color: var(--texto-2); font-size: .98rem; }
+    .proximo b { color: var(--texto); }
+    .proximo em { font-style: normal; color: var(--ambar); font-weight: 700; }
+
+    @keyframes pulsar {
+      0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--cor-periodo) 35%, transparent); }
+      50%      { box-shadow: 0 0 22px color-mix(in srgb, var(--cor-periodo) 75%, transparent); }
+    }
+
+    /* ---------- Contagem regressiva ---------- */
+    .contagem {
+      margin: 18px 0 0;
+      padding: 14px 12px 16px;
+      border: 1.5px solid var(--rosa);
+      border-radius: 18px;
+      background: var(--vidro);
+      text-align: center;
+      box-shadow: 0 0 18px rgba(255, 46, 136, .35), inset 0 0 18px rgba(255, 46, 136, .15);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .contagem p {
+      margin: 0 0 6px;
+      color: var(--ciano);
+      font: 400 1.15rem var(--titulo);
+      letter-spacing: .2em;
+      text-shadow: 0 0 8px var(--ciano);
+    }
+    .contagem-numeros { display: flex; justify-content: center; gap: 8px; }
+    .contagem-numeros div { min-width: 64px; }
+    .contagem-numeros b {
+      display: block;
+      color: #fff;
+      font: 400 2.8rem/1 var(--titulo);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 6px var(--rosa), 0 0 16px var(--rosa), 0 0 30px var(--rosa);
+      animation: piscar 4s steps(1) infinite;
+    }
+    .contagem-numeros span { color: var(--texto-2); font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    @keyframes piscar {
+      0%, 100% { opacity: 1; }
+      91% { opacity: .55; }
+      93% { opacity: 1; }
+      95% { opacity: .7; }
+      96% { opacity: 1; }
+    }
+
+    /* ---------- Abas dos dias ---------- */
+    .abas {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 18px 0 14px;
+    }
+    .aba {
+      min-height: 60px;
+      padding: 6px 0;
+      border: 1.5px solid var(--borda);
+      border-radius: 14px;
+      background: var(--vidro);
+      cursor: pointer;
+      line-height: 1;
+      transition: border-color .15s, box-shadow .15s, transform .1s;
+    }
+    .aba:active { transform: scale(.96); }
+    .aba span { display: block; color: var(--texto-2); font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .aba b { display: block; margin-top: 4px; font: 400 1.7rem/1 var(--titulo); }
+    .aba[aria-selected="true"] {
+      border-color: var(--ciano);
+      background: rgba(34, 211, 238, .12);
+      box-shadow: 0 0 14px rgba(34, 211, 238, .45);
+    }
+    .aba[aria-selected="true"] span { color: var(--ciano); }
+    .aba.is-hoje b::after { content: '•'; color: var(--rosa); margin-left: 2px; }
+
+    .dia-titulo { margin: 0; font: 400 2rem/1 var(--titulo); letter-spacing: .04em; }
+    .dia-nota { margin: 4px 0 14px; color: var(--texto-2); font-size: .95rem; }
+
+    /* ---------- Contador de Red Bull (HUD) ---------- */
+    .hud {
+      margin-bottom: 20px;
+      padding: 14px;
+      border: 1.5px solid rgba(34, 211, 238, .6);
+      border-radius: 18px;
+      background: var(--vidro);
+      box-shadow: 0 0 16px rgba(34, 211, 238, .2);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .hud-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .hud-topo h3 {
+      margin: 0;
+      color: var(--ciano);
+      font: 400 1.3rem/1 var(--titulo);
+      letter-spacing: .14em;
+      text-shadow: 0 0 8px rgba(34, 211, 238, .6);
+    }
+    .hud-total { font: 400 1.7rem/1 var(--titulo); letter-spacing: .03em; font-variant-numeric: tabular-nums; }
+    .hud-total small { color: var(--texto-2); font-size: 1rem; }
+    .barra {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin: 10px 0 6px;
+      padding: 4px;
+      border: 1.5px solid rgba(255, 255, 255, .35);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .45);
+    }
+    .barra i {
+      height: 18px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, .07);
+      transition: background .25s, box-shadow .25s;
+    }
+    .barra i.plano { background: rgba(34, 211, 238, .14); }
+    .barra i.cheio { background: var(--ciano); box-shadow: 0 0 8px var(--ciano); }
+    .barra i.cheio.extra { background: var(--amarelo); box-shadow: 0 0 8px var(--amarelo); }
+    .barra.teto i.cheio { background: var(--vermelho); box-shadow: 0 0 10px var(--vermelho); }
+    .hud-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; color: var(--texto-2); font-size: .9rem; }
+    .hud-info b { color: var(--texto); }
+    .hud-nota { margin: 6px 0 0; color: var(--texto-2); font-size: .88rem; }
+    .hud-botoes { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 12px; }
+    .btn {
+      min-height: 52px;
+      padding: 0 14px;
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .1s, filter .15s;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn-lata {
+      background: linear-gradient(180deg, #2ee6ff, #12a9c4);
+      color: #04212a;
+      font: 400 1.5rem/1 var(--titulo);
+      letter-spacing: .06em;
+      box-shadow: 0 0 16px rgba(34, 211, 238, .5);
+    }
+    .btn-grande { border-color: var(--ciano); background: transparent; color: var(--ciano); font-size: .9rem; line-height: 1.1; }
+    .btn-menos { min-width: 52px; border-color: var(--borda); background: rgba(255, 255, 255, .06); font-size: 1.3rem; }
+    .btn:disabled { opacity: .35; cursor: default; transform: none; }
+    .latas { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .latas li {
+      padding: 3px 9px;
+      border: 1px solid rgba(34, 211, 238, .45);
+      border-radius: 999px;
+      font-size: .88rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .latas li.vazio { border-style: dashed; color: var(--texto-2); }
+    .aviso {
+      margin: 10px 0 0;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: .95rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .aviso:empty { display: none; }
+    .aviso--amarelo { border: 1.5px solid var(--amarelo); background: rgba(255, 210, 63, .14); color: #ffe68a; }
+    .aviso--vermelho { border: 1.5px solid var(--vermelho); background: rgba(255, 77, 94, .18); color: #ffc2c8; }
+
+    /* ---------- Linha do tempo ---------- */
+    .periodo-grupo { margin-bottom: 18px; }
+    .periodo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--cor-periodo);
+      font: 400 1.3rem/1 var(--titulo);
+      letter-spacing: .16em;
+      text-shadow: 0 0 10px color-mix(in srgb, var(--cor-periodo) 60%, transparent);
+    }
+    .periodo-titulo::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cor-periodo) 45%, transparent); }
+    .blocos { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .bloco {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+      padding: 10px 12px 10px 14px;
+      border: 1px solid var(--borda);
+      border-left: 4px solid var(--cor-periodo);
+      border-radius: 14px;
+      background: var(--vidro);
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      transition: opacity .2s, box-shadow .2s;
+    }
+    .bloco-icone { font-size: 1.6rem; line-height: 1; }
+    .bloco-hora {
+      display: block;
+      color: var(--cor-periodo);
+      font: 400 1.2rem/1 var(--titulo);
+      letter-spacing: .06em;
+    }
+    .bloco-texto { display: block; margin-top: 3px; font-weight: 600; line-height: 1.3; }
+    .bloco input {
+      appearance: none;
+      -webkit-appearance: none;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin: 0;
+      border: 2px solid var(--cor-periodo);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, .3);
+      cursor: pointer;
+    }
+    .bloco input::after {
+      content: '';
+      width: 9px;
+      height: 16px;
+      margin-top: -3px;
+      border: solid #1a0b2e;
+      border-width: 0 3.5px 3.5px 0;
+      transform: rotate(45deg) scale(0);
+      transition: transform .15s;
+    }
+    .bloco input:checked { background: var(--cor-periodo); }
+    .bloco input:checked::after { transform: rotate(45deg) scale(1); }
+    .bloco.is-feito { opacity: .55; }
+    .bloco.is-feito .bloco-texto { text-decoration: line-through; text-decoration-thickness: 2px; }
+    .bloco.is-agora {
+      border-color: var(--cor-periodo);
+      background: color-mix(in srgb, var(--cor-periodo) 16%, rgba(30, 12, 52, .7));
+      animation: pulsar 2.4s ease-in-out infinite;
+    }
+    .selo-agora {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px 1px;
+      border-radius: 6px;
+      background: var(--cor-periodo);
+      color: #1a0b2e;
+      font: 400 .9rem/1.1 var(--titulo);
+      letter-spacing: .1em;
+      vertical-align: 2px;
+    }
+    .bloco.is-lata { border-style: dashed; border-left-style: solid; }
+
+    .p-madrugada { --cor-periodo: var(--madrugada); }
+    .p-manha     { --cor-periodo: var(--manha); }
+    .p-tarde     { --cor-periodo: var(--tarde); }
+    .p-noite     { --cor-periodo: var(--noite); }
+    .p-fora      { --cor-periodo: var(--ciano); }
+
+    /* ---------- Regras ---------- */
+    .regras {
+      margin: 26px 0 0;
+      padding: 16px 16px 6px;
+      border: 1.5px solid rgba(255, 179, 71, .6);
+      border-radius: 18px;
+      background: var(--vidro);
+    }
+    .regras h2 {
+      margin: 0 0 8px;
+      color: var(--ambar);
+      font: 400 1.5rem/1 var(--titulo);
+      letter-spacing: .12em;
+      text-shadow: 0 0 10px rgba(255, 179, 71, .55);
+    }
+    .regras ul { margin: 0; padding: 0; list-style: none; }
+    .regras li { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--borda); }
+    .regras li:first-child { border-top: 0; }
+    .regras li.alerta { color: #ffc2c8; font-weight: 700; }
+    .rodape { margin: 16px 0 28px; color: var(--texto-2); font-size: .82rem; text-align: center; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Cabeçalho: sol retrô listrado e palmeiras (desenho próprio, sem arte do jogo) -->
+  <header class="cena">
+    <svg viewBox="0 0 400 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="g-sol" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe066"/>
+          <stop offset=".55" stop-color="#ff8a3d"/>
+          <stop offset="1" stop-color="#ff2e88"/>
+        </linearGradient>
+        <mask id="m-listras">
+          <rect width="400" height="170" fill="#fff"/>
+          <rect x="0" y="100" width="400" height="3" fill="#000"/>
+          <rect x="0" y="112" width="400" height="4" fill="#000"/>
+          <rect x="0" y="123" width="400" height="5" fill="#000"/>
+          <rect x="0" y="134" width="400" height="6" fill="#000"/>
+          <rect x="0" y="145" width="400" height="8" fill="#000"/>
+        </mask>
+        <g id="palmeira" fill="none" stroke="#14061f" stroke-linecap="round">
+          <path d="M0 170 C2 140 8 110 20 82" stroke-width="7"/>
+          <path d="M20 82 Q-6 66 -30 82" stroke-width="6"/>
+          <path d="M20 82 Q-2 54 -26 52" stroke-width="6"/>
+          <path d="M20 82 Q14 52 0 36" stroke-width="5.5"/>
+          <path d="M20 82 Q30 50 52 44" stroke-width="6"/>
+          <path d="M20 82 Q48 68 66 86" stroke-width="6"/>
+          <path d="M20 82 Q40 80 50 104" stroke-width="5"/>
+        </g>
+      </defs>
+      <circle cx="200" cy="112" r="74" fill="url(#g-sol)" mask="url(#m-listras)"/>
+      <rect x="0" y="156" width="400" height="14" fill="#1a0b2e" opacity=".85"/>
+      <path d="M0 156 H400" stroke="#ff2e88" stroke-width="1.5" opacity=".9"/>
+      <use href="#palmeira" transform="translate(48 0)"/>
+      <use href="#palmeira" transform="translate(84 18) scale(.8)"/>
+      <use href="#palmeira" transform="translate(352 -6) scale(-1.05 1.05)"/>
+    </svg>
+    <h1>Maratona <span>GTA 6</span></h1>
+    <p class="datas">18 → 22 nov · 2026</p>
+  </header>
+
+  <!-- Topo fixo -->
+  <section class="status" id="status" aria-label="Agora">
+    <div class="wrap">
+      <div class="status-linha">
+        <div>
+          <span class="relogio" id="relogio">--:--</span>
+          <span class="data-hoje" id="data-hoje"></span>
+        </div>
+        <span class="periodo" id="periodo"></span>
+      </div>
+      <div class="agora" id="agora">
+        <span class="rotulo">Agora</span>
+        <strong id="agora-texto">…</strong>
+      </div>
+      <p class="proximo" id="proximo"></p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="contagem" id="contagem" hidden>
+      <p>GTA 6 chega em</p>
+      <div class="contagem-numeros" aria-live="off">
+        <div><b id="cd-d">00</b><span>dias</span></div>
+        <div><b id="cd-h">00</b><span>horas</span></div>
+        <div><b id="cd-m">00</b><span>min</span></div>
+        <div><b id="cd-s">00</b><span>seg</span></div>
+      </div>
+    </div>
+
+    <nav class="abas" role="tablist" aria-label="Dias da maratona" id="abas"></nav>
+    <section id="painel" role="tabpanel"></section>
+
+    <section class="regras" aria-labelledby="titulo-regras">
+      <h2 id="titulo-regras">Regras fixas</h2>
+      <ul>
+        <li><span>🥫</span><span>Lata grande de 473 ml conta como 2 pequenas.</span></li>
+        <li><span>🍽️</span><span>Nunca de estômago vazio.</span></li>
+        <li><span>💧</span><span>Um copo de água a cada lata.</span></li>
+        <li><span>🚫</span><span>Nada de álcool junto.</span></li>
+        <li class="alerta"><span>❤️</span><span>Se sentir coração disparado, tremedeira ou dor no peito, parar a cafeína na hora.</span></li>
+      </ul>
+    </section>
+    <p class="rodape">Lata pequena (250 ml) ≈ 80 mg de cafeína · teto do dia: 5 pequenas (400 mg)</p>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* =========================================================
+       PLANO
+       Horários no formato 'DIA HH:MM' (dia do mês de novembro).
+       fim → bloco com duração (ex.: jogar das 21h30 às 03h00)
+       dur → por quanto tempo um evento pontual conta como "agora" (min)
+       ========================================================= */
+    const DIAS = [
+      {
+        aba: 'Qua', num: 18, titulo: 'Quarta 18/11',
+        nota: 'A madrugada de 19 entra aqui, até sair para o trabalho.',
+        contador: '19',
+        blocos: [
+          { ini: '18 23:30', dur: 30, icone: '🚿', texto: 'Chegar da escola, tomar banho, jantar', curto: 'Chegar e jantar' },
+          { ini: '19 00:00', fim: '19 06:45', icone: '🎮', texto: 'Jogar GTA 6 (pausa rápida a cada 1–2h)', curto: 'Jogar' },
+          { ini: '19 00:00', lata: true },
+          { ini: '19 04:00', lata: true },
+          { ini: '19 07:00', dur: 30, icone: '👕', texto: 'Me arrumar', curto: 'Me arrumar' },
+          { ini: '19 07:30', dur: 10, icone: '🚌', texto: 'Sair para o trabalho', curto: 'Sair para o trabalho' },
+        ],
+      },
+      {
+        aba: 'Qui', num: 19, titulo: 'Quinta 19/11',
+        nota: 'Trabalho virado. Atenção redobrada.',
+        contador: '19',
+        blocos: [
+          { ini: '19 07:30', dur: 15, icone: '🍞', texto: 'Comer algo antes de sair', curto: 'Comer algo' },
+          { ini: '19 07:30', fim: '19 14:00', icone: '💼', texto: 'Trabalho (atenção redobrada, estou virado)', curto: 'Trabalho' },
+          { ini: '19 09:00', lata: true, texto: 'Red Bull (última até acordar)' },
+          { ini: '19 14:30', dur: 30, icone: '🍽️', texto: 'Chegar em casa e almoçar', curto: 'Almoçar' },
+          { ini: '19 15:00', fim: '19 21:00', icone: '😴', texto: 'DORMIR 6h (alarme! obrigatório)', curto: 'Dormir' },
+          { ini: '19 21:00', dur: 30, icone: '⏰', texto: 'Acordar e jantar', curto: 'Acordar e jantar' },
+          { ini: '19 21:30', lata: true },
+          { ini: '19 21:30', fim: '20 03:00', icone: '🎮', texto: 'Jogar', curto: 'Jogar' },
+        ],
+      },
+      {
+        aba: 'Sex', num: 20, titulo: 'Sexta 20/11',
+        nota: 'Feriado.',
+        contador: '20',
+        blocos: [
+          { ini: '20 03:00', fim: '20 09:30', icone: '😴', texto: 'Dormir', curto: 'Dormir' },
+          { ini: '20 10:00', dur: 30, icone: '⏰', texto: 'Acordar e comer', curto: 'Acordar e comer' },
+          { ini: '20 10:00', fim: '21 03:00', icone: '🎮', texto: 'Jogar (parar para almoço e jantar)', curto: 'Jogar' },
+          { ini: '20 13:00', lata: true },
+          { ini: '20 18:00', lata: true },
+        ],
+      },
+      {
+        aba: 'Sáb', num: 21, titulo: 'Sábado 21/11',
+        nota: '',
+        contador: '21',
+        blocos: [
+          { ini: '21 03:00', fim: '21 10:00', icone: '😴', texto: 'Dormir', curto: 'Dormir' },
+          { ini: '21 10:00', fim: '22 02:00', icone: '🎮', texto: 'Jogar', curto: 'Jogar' },
+          { ini: '21 13:00', lata: true },
+          { ini: '21 18:00', lata: true },
+        ],
+      },
+      {
+        aba: 'Dom', num: 22, titulo: 'Domingo 22/11',
+        nota: 'Último dia: segunda tem compromisso.',
+        contador: '22',
+        blocos: [
+          { ini: '22 02:00', fim: '22 09:00', icone: '😴', texto: 'Dormir', curto: 'Dormir' },
+          { ini: '22 09:00', fim: '22 20:30', icone: '🎮', texto: 'Jogar', curto: 'Jogar' },
+          { ini: '22 09:00', fim: '22 13:00', lata: true, rotulo: 'até 13h00', texto: 'No máximo 1 Red Bull' },
+          { ini: '22 20:30', dur: 90, icone: '📴', texto: 'Desligar, jantar, banho, longe de tela', curto: 'Desligar' },
+          { ini: '22 22:00', dur: 480, icone: '🛏️', texto: 'DORMIR (descansado para segunda)', curto: 'Dormir' },
+        ],
+      },
+    ];
+
+    // Contadores de lata por dia do calendário (a quinta começa às 00h de 19/11)
+    const CONTADORES = {
+      '19': { planejado: 4, limite: '19 21:30', nota: 'Conta desde 00h de 19/11: 2 latas da madrugada + 2 da quinta (320 mg).' },
+      '20': { planejado: 2, limite: '20 21:00' },
+      '21': { planejado: 2, limite: '21 20:00' },
+      '22': { planejado: 1, limite: '22 13:00' },
+    };
+    const TETO = 5;          // latas pequenas por dia (400 mg)
+    const MG_POR_LATA = 80;
+    const LANCAMENTO = '19 00:00';
+
+    const PERIODOS = [
+      { id: 'madrugada', nome: 'Madrugada', icone: '🌙', de: 0 },
+      { id: 'manha', nome: 'Manhã', icone: '🌅', de: 6 },
+      { id: 'tarde', nome: 'Tarde', icone: '☀️', de: 12 },
+      { id: 'noite', nome: 'Noite', icone: '🌆', de: 18 },
+    ];
+
+    /* ---------- Tempo (sempre no fuso de São Paulo) ---------- */
+    // Tudo vira "minutos desde 18/11/2026 00:00 em São Paulo"
+    const BASE = Date.UTC(2026, 10, 18, 0, 0, 0);
+    const minDe = texto => {
+      const [dia, hm] = texto.split(' ');
+      const [h, m] = hm.split(':').map(Number);
+      return (Number(dia) - 18) * 1440 + h * 60 + m;
+    };
+
+    const formatoSP = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Sao_Paulo', hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+
+    // Para testar outro horário: abra com ?agora=2026-11-19T03:10
+    const simulado = (() => {
+      try {
+        const v = new URLSearchParams(location.search).get('agora');
+        if (!v) return null;
+        const [d, t = '00:00'] = v.split('T');
+        const [a, me, di] = d.split('-').map(Number);
+        const [h, mi] = t.split(':').map(Number);
+        return { relogio: Date.UTC(a, me - 1, di, h, mi, 0), desde: Date.now() };
+      } catch (e) { return null; }
+    })();
+
+    // "Relógio de parede" de São Paulo, em milissegundos (lido com getUTC*)
+    function paredeSP() {
+      if (simulado) return simulado.relogio + (Date.now() - simulado.desde);
+      const p = {};
+      formatoSP.formatToParts(new Date()).forEach(x => { p[x.type] = Number(x.value); });
+      return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+    }
+    const minutosAgora = parede => (parede - BASE) / 60000;
+
+    const dois = n => String(n).padStart(2, '0');
+    const horaDe = min => {
+      const m = ((Math.floor(min) % 1440) + 1440) % 1440;
+      return `${dois(Math.floor(m / 60))}h${dois(m % 60)}`;
+    };
+    const periodoDe = min => {
+      const h = Math.floor((((Math.floor(min) % 1440) + 1440) % 1440) / 60);
+      return PERIODOS.slice().reverse().find(p => h >= p.de);
+    };
+    function duracao(min) {
+      min = Math.max(0, Math.ceil(min));
+      const d = Math.floor(min / 1440);
+      const h = Math.floor((min % 1440) / 60);
+      const m = min % 60;
+      if (d) return `${d}d ${h}h`;
+      if (h) return m ? `${h}h${dois(m)}` : `${h}h`;
+      return `${m}min`;
+    }
+
+    /* ---------- Blocos ---------- */
+    const BLOCOS = [];
+    DIAS.forEach((dia, d) => {
+      dia.blocos.forEach((b, i) => {
+        if (b.lata) {
+          b.icone = '🥤';
+          b.texto = b.texto || 'Red Bull';
+          b.curto = 'Red Bull';
+        }
+        b.id = `${dia.num}-${i}`;
+        b.dia = d;
+        b.inicio = minDe(b.ini);
+        b.final = b.fim ? minDe(b.fim) : b.inicio + (b.dur || 15);
+        b.hora = b.rotulo || (b.fim ? `${horaDe(b.inicio)}–${horaDe(b.final)}` : horaDe(b.inicio));
+        BLOCOS.push(b);
+      });
+    });
+    const INICIO_DO_PLANO = Math.min(...BLOCOS.map(b => b.inicio));
+    const FIM_DO_PLANO = Math.max(...BLOCOS.map(b => b.final));
+
+    const ativos = agora => BLOCOS.filter(b => b.inicio <= agora && agora < b.final);
+    // O "agora" principal é o bloco ativo mais curto (o mais específico), sem contar latas
+    function blocoAtual(agora) {
+      const lista = ativos(agora).filter(b => !b.lata);
+      lista.sort((a, b) => (a.final - a.inicio) - (b.final - b.inicio));
+      return lista[0] || null;
+    }
+    function proximoBloco(agora) {
+      const futuros = BLOCOS.filter(b => b.inicio > agora);
+      futuros.sort((a, b) => a.inicio - b.inicio || (a.final - a.inicio) - (b.final - b.inicio));
+      return futuros[0] || null;
+    }
+
+    /* ---------- Progresso salvo no aparelho ---------- */
+    const CHAVE = 'maratona-gta6-v1';
+    let estado = { feitos: {}, latas: {} };
+    try {
+      const salvo = JSON.parse(localStorage.getItem(CHAVE));
+      if (salvo && typeof salvo === 'object') estado = { feitos: salvo.feitos || {}, latas: salvo.latas || {} };
+    } catch (e) { /* sem armazenamento: o app funciona, só não lembra */ }
+    function salvar() {
+      try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* ignora */ }
+    }
+
+    const latasDe = chave => estado.latas[chave] || [];
+    const totalDe = chave => latasDe(chave).reduce((s, l) => s + (l.g ? 2 : 1), 0);
+
+    /* ---------- Tela ---------- */
+    const $ = id => document.getElementById(id);
+    const abasEl = $('abas');
+    const painel = $('painel');
+    let diaAberto = 0;
+    let pendente = null;     // segundo toque para confirmar uma lata com aviso
+    let mensagens = {};      // aviso temporário por contador
+
+    function diaPadrao(agora) {
+      const atual = blocoAtual(agora);
+      if (atual) return atual.dia;
+      const prox = proximoBloco(agora);
+      if (prox) return prox.dia;
+      return DIAS.length - 1;
+    }
+
+    function desenharAbas(agora) {
+      const hoje = diaPadrao(agora);
+      abasEl.innerHTML = DIAS.map((d, i) => `
+        <button type="button" class="aba${i === hoje && agora >= 0 && agora < FIM_DO_PLANO ? ' is-hoje' : ''}" role="tab"
+                id="aba-${i}" aria-controls="painel" aria-selected="${i === diaAberto}" data-dia="${i}">
+          <span>${d.aba}</span><b>${d.num}</b>
+        </button>`).join('');
+      painel.setAttribute('aria-labelledby', `aba-${diaAberto}`);
+    }
+
+    function desenharContador(chave, agora) {
+      const c = CONTADORES[chave];
+      const total = totalDe(chave);
+      const limite = minDe(c.limite);
+      const lista = latasDe(chave);
+      const segmentos = Array.from({ length: TETO }, (_, i) => {
+        const n = i + 1;
+        const classes = [n <= c.planejado ? 'plano' : '', n <= total ? 'cheio' : '', n > c.planejado ? 'extra' : ''];
+        return `<i class="${classes.join(' ').trim()}"></i>`;
+      }).join('');
+
+      let aviso = '';
+      let tipoAviso = '';
+      if (total >= TETO) {
+        aviso = `Teto de ${TETO} latas (400 mg) atingido. Chega de cafeína hoje.`;
+        tipoAviso = 'vermelho';
+      } else if (total > c.planejado) {
+        aviso = `Passou do planejado de hoje (${c.planejado} ${c.planejado === 1 ? 'lata' : 'latas'}).`;
+        tipoAviso = 'amarelo';
+      }
+      const temp = mensagens[chave];
+      if (temp) { aviso = temp.texto; tipoAviso = temp.tipo; }
+
+      const passouLimite = agora >= limite;
+      return `
+        <div class="hud" data-contador="${chave}">
+          <div class="hud-topo">
+            <h3>🥤 Red Bull · ${Number(chave)}/11</h3>
+            <span class="hud-total">${total} <small>de ${c.planejado} ${c.planejado === 1 ? 'lata' : 'latas'}</small></span>
+          </div>
+          <div class="barra${total >= TETO ? ' teto' : ''}" role="img" aria-label="${total} de ${TETO} latas no máximo">${segmentos}</div>
+          <div class="hud-info">
+            <span><b>${total * MG_POR_LATA} mg</b> de 400 mg</span>
+            <span>Última lata até <b>${horaDe(limite)}</b>${passouLimite ? ' (já passou)' : ''}</span>
+          </div>
+          ${c.nota ? `<p class="hud-nota">${c.nota}</p>` : ''}
+          <ul class="latas" aria-label="Latas registradas">
+            ${lista.length
+              ? lista.map(l => {
+                  const dt = new Date(l.t);
+                  return `<li>${dois(dt.getUTCHours())}h${dois(dt.getUTCMinutes())}${l.g ? ' · grande' : ''}</li>`;
+                }).join('')
+              : '<li class="vazio">Nenhuma lata registrada</li>'}
+          </ul>
+          <p class="aviso ${tipoAviso ? 'aviso--' + tipoAviso : ''}" aria-live="polite">${aviso}</p>
+          <div class="hud-botoes">
+            <button type="button" class="btn btn-lata" data-acao="mais">+1 lata</button>
+            <button type="button" class="btn btn-grande" data-acao="grande">+ grande<br>(conta 2)</button>
+            <button type="button" class="btn btn-menos" data-acao="menos" aria-label="Tirar a última lata" ${lista.length ? '' : 'disabled'}>−1</button>
+          </div>
+        </div>`;
+    }
+
+    function desenharPainel(agora) {
+      const dia = DIAS[diaAberto];
+      const atuais = new Set(ativos(agora).map(b => b.id));
+
+      // agrupa em sequência, abrindo um grupo novo quando o período muda
+      const grupos = [];
+      dia.blocos.slice().sort((a, b) => a.inicio - b.inicio).forEach(b => {
+        const p = periodoDe(b.inicio);
+        if (!grupos.length || grupos[grupos.length - 1].periodo !== p) grupos.push({ periodo: p, blocos: [] });
+        grupos[grupos.length - 1].blocos.push(b);
+      });
+
+      painel.innerHTML = `
+        <h2 class="dia-titulo">${dia.titulo}</h2>
+        ${dia.nota ? `<p class="dia-nota">${dia.nota}</p>` : '<p class="dia-nota"></p>'}
+        ${desenharContador(dia.contador, agora)}
+        ${grupos.map(g => `
+          <section class="periodo-grupo p-${g.periodo.id}">
+            <h3 class="periodo-titulo">${g.periodo.icone} ${g.periodo.nome}</h3>
+            <ul class="blocos">
+              ${g.blocos.map(b => {
+                const feito = !!estado.feitos[b.id];
+                const agoraAqui = atuais.has(b.id);
+                return `
+                <li>
+                  <label class="bloco${feito ? ' is-feito' : ''}${agoraAqui ? ' is-agora' : ''}${b.lata ? ' is-lata' : ''}">
+                    <span class="bloco-icone" aria-hidden="true">${b.icone}</span>
+                    <span>
+                      <span class="bloco-hora">${b.hora}${agoraAqui ? '<span class="selo-agora">Agora</span>' : ''}</span>
+                      <span class="bloco-texto">${b.texto}</span>
+                    </span>
+                    <input type="checkbox" data-bloco="${b.id}" ${feito ? 'checked' : ''} aria-label="Feito: ${b.texto}">
+                  </label>
+                </li>`;
+              }).join('')}
+            </ul>
+          </section>`).join('')}`;
+    }
+
+    function desenharStatus(parede, agora) {
+      const dt = new Date(parede);
+      $('relogio').innerHTML = `${dois(dt.getUTCHours())}:${dois(dt.getUTCMinutes())}<small>:${dois(dt.getUTCSeconds())}</small>`;
+      $('data-hoje').textContent = dt.toLocaleDateString('pt-BR', { timeZone: 'UTC', weekday: 'short', day: '2-digit', month: '2-digit' });
+
+      const p = periodoDe(agora);
+      const status = $('status');
+      status.className = `status p-${p.id}`;
+      $('periodo').textContent = `${p.icone} ${p.nome}`;
+
+      const atual = blocoAtual(agora);
+      const prox = proximoBloco(agora);
+      let textoAgora;
+      if (atual) textoAgora = `${atual.icone} ${atual.texto}`;
+      else if (agora < INICIO_DO_PLANO) textoAgora = 'A maratona ainda não começou';
+      else if (agora >= FIM_DO_PLANO) textoAgora = 'Maratona concluída. Bom descanso! 🏁';
+      else textoAgora = 'Intervalo livre';
+      $('agora-texto').textContent = textoAgora;
+
+      $('proximo').innerHTML = prox
+        ? `Próximo: <b>${prox.icone} ${prox.curto || prox.texto}</b> em <em>${duracao(prox.inicio - agora)}</em>`
+        : '';
+
+      // contagem regressiva até o lançamento (19/11 00h00)
+      const falta = minDe(LANCAMENTO) * 60 - agora * 60;
+      const contagem = $('contagem');
+      contagem.hidden = falta <= 0;
+      if (falta > 0) {
+        const s = Math.floor(falta);
+        $('cd-d').textContent = dois(Math.floor(s / 86400));
+        $('cd-h').textContent = dois(Math.floor((s % 86400) / 3600));
+        $('cd-m').textContent = dois(Math.floor((s % 3600) / 60));
+        $('cd-s').textContent = dois(s % 60);
+      }
+    }
+
+    /* ---------- Latas ---------- */
+    function registrar(chave, grande) {
+      const c = CONTADORES[chave];
+      const parede = paredeSP();
+      const agora = minutosAgora(parede);
+      const total = totalDe(chave);
+      const novo = total + (grande ? 2 : 1);
+      const limite = minDe(c.limite);
+
+      let motivo = null;
+      if (novo > TETO) motivo = { texto: `Isso passa do teto de ${TETO} latas (400 mg). Toque de novo só se tiver certeza.`, tipo: 'vermelho' };
+      else if (agora >= limite) motivo = { texto: `Já passou das ${horaDe(limite)}, o limite da última lata. Toque de novo para registrar mesmo assim.`, tipo: 'amarelo' };
+
+      const chavePendente = `${chave}-${grande}`;
+      if (motivo && !(pendente && pendente.chave === chavePendente && Date.now() < pendente.ate)) {
+        pendente = { chave: chavePendente, ate: Date.now() + 6000 };
+        mensagens[chave] = motivo;
+        render();
+        return;
+      }
+      pendente = null;
+      delete mensagens[chave];
+      estado.latas[chave] = latasDe(chave).concat({ t: parede, g: !!grande });
+      salvar();
+      render();
+    }
+
+    function tirarUltima(chave) {
+      const lista = latasDe(chave);
+      if (!lista.length) return;
+      estado.latas[chave] = lista.slice(0, -1);
+      delete mensagens[chave];
+      pendente = null;
+      salvar();
+      render();
+    }
+
+    /* ---------- Eventos ---------- */
+    abasEl.addEventListener('click', e => {
+      const aba = e.target.closest('[data-dia]');
+      if (!aba) return;
+      diaAberto = Number(aba.dataset.dia);
+      render();
+    });
+    abasEl.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      diaAberto = (diaAberto + (e.key === 'ArrowRight' ? 1 : DIAS.length - 1)) % DIAS.length;
+      render();
+      $(`aba-${diaAberto}`).focus();
+    });
+
+    painel.addEventListener('change', e => {
+      const caixa = e.target.closest('[data-bloco]');
+      if (!caixa) return;
+      if (caixa.checked) estado.feitos[caixa.dataset.bloco] = true;
+      else delete estado.feitos[caixa.dataset.bloco];
+      salvar();
+      caixa.closest('.bloco').classList.toggle('is-feito', caixa.checked);
+    });
+
+    painel.addEventListener('click', e => {
+      const botao = e.target.closest('[data-acao]');
+      if (!botao) return;
+      const chave = botao.closest('[data-contador]').dataset.contador;
+      if (botao.dataset.acao === 'mais') registrar(chave, false);
+      if (botao.dataset.acao === 'grande') registrar(chave, true);
+      if (botao.dataset.acao === 'menos') tirarUltima(chave);
+    });
+
+    /* ---------- Atualização ---------- */
+    let ultimoMinuto = null;
+    function render() {
+      const parede = paredeSP();
+      const agora = minutosAgora(parede);
+      desenharAbas(agora);
+      desenharPainel(agora);
+      desenharStatus(parede, agora);
+      ultimoMinuto = Math.floor(agora);
+    }
+
+    function tique() {
+      const parede = paredeSP();
+      const agora = minutosAgora(parede);
+      // o aviso de confirmação some sozinho depois de alguns segundos
+      const avisoVenceu = pendente && Date.now() >= pendente.ate;
+      if (avisoVenceu) { pendente = null; mensagens = {}; }
+      if (avisoVenceu || Math.floor(agora) !== ultimoMinuto) {
+        render();
+      } else {
+        desenharStatus(parede, agora);
+      }
+    }
+
+    diaAberto = diaPadrao(minutosAgora(paredeSP()));
+    render();
+    setInterval(tique, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+
+    // Funciona sem internet depois da primeira visita (quando hospedado, com o sw.js ao lado)
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  })();
+  </script>
+</body>
+</html>
